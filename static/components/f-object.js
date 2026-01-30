@@ -94,7 +94,7 @@ customElements.define(
   "f-object-root",
   class extends Component {
     init() {
-      const { schema, value, isNew } = this;
+      const { schema, value, isNew, documentDirname, documentPathDir } = this;
       const namePrefix = getFieldName(this);
 
       const div = dom("div", {
@@ -106,6 +106,8 @@ customElements.define(
           ".schema": field,
           ".namePrefix": namePrefix,
           ".isNew": isNew,
+          ".documentDirname": documentDirname,
+          ".documentPathDir": documentPathDir,
           value: value?.[field.name] ?? null,
         }, div);
       }

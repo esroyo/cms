@@ -7,7 +7,7 @@ customElements.define(
   class extends Component {
     init() {
       this.classList.add("field");
-      const { schema, value, namePrefix, isNew } = this;
+      const { schema, value, namePrefix, isNew, documentDirname, documentPathDir } = this;
       const name = `${namePrefix}.${schema.name}`;
       const id = `field_${name}`;
 
@@ -34,7 +34,8 @@ customElements.define(
         type: "button",
         html: '<u-icon name="magnifying-glass"></u-icon>',
         onclick() {
-          const upload = schema.upload.split(":").shift();
+          const parentParam = documentPathDir ? `?parent=${encodeURIComponent(documentPathDir)}` : '';
+          const [upload, uploadPath] = schema.upload.split(":");
 
           if (curr.value && !curr.value.match(/^https?:\/\//)) {
             let filename = curr.value.startsWith(schema.publicPath || "")
@@ -42,14 +43,28 @@ customElements.define(
               : curr.value;
             if (filename.startsWith("/")) {
               filename = filename.substring(1);
+            } else if (
+              filename.startsWith("./") ||
+              filename.startsWith("../")
+            ) {
+              const basename = filename.split('/').pop(); 
+              if (!uploadPath) {
+                filename = basename;
+              } else {
+                let resolvedUploadPath = uploadPath.replace("{document_dirname}", documentDirname);
+                if (!resolvedUploadPath.endsWith("/")) {
+                  resolvedUploadPath += "/";
+                }
+                filename = `${resolvedUploadPath}${basename}`;
+              }
             }
 
             dom("u-modal", {
-              data: { src: url("uploads", upload, filename, "edit") },
+              data: { src: url("uploads", upload, filename, "edit") + parentParam },
             }, document.body);
           } else {
             dom("u-modal", {
-              data: { src: url("uploads", upload) },
+              data: { src: url("uploads", upload) + parentParam },
             }, document.body);
           }
         },
