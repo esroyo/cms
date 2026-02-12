@@ -1,13 +1,14 @@
 import { Component } from "./component.js";
 import { initField, oninvalid, updateField, url } from "./utils.js";
 import dom from "dom";
+import { join } from "std/path/posix/join.js";
 
 customElements.define(
   "f-file",
   class extends Component {
     init() {
       this.classList.add("field");
-      const { schema, value, namePrefix, isNew, documentDirname, documentPathDir } = this;
+      const { schema, value, namePrefix, isNew, documentPathDir } = this;
       const name = `${namePrefix}.${schema.name}`;
       const id = `field_${name}`;
 
@@ -34,29 +35,22 @@ customElements.define(
         type: "button",
         html: '<u-icon name="magnifying-glass"></u-icon>',
         onclick() {
+          const upload = schema.upload.split(":").shift();
           const parentParam = documentPathDir ? `?parent=${encodeURIComponent(documentPathDir)}` : '';
-          const [upload, uploadPath] = schema.upload.split(":");
 
           if (curr.value && !curr.value.match(/^https?:\/\//)) {
-            let filename = curr.value.startsWith(schema.publicPath || "")
-              ? curr.value.substring(schema.publicPath.length)
-              : curr.value;
-            if (filename.startsWith("/")) {
-              filename = filename.substring(1);
-            } else if (
+            let filename = curr.value;
+            if (
               filename.startsWith("./") ||
               filename.startsWith("../")
             ) {
-              const basename = filename.split('/').pop(); 
-              if (!uploadPath) {
-                filename = basename;
-              } else {
-                let resolvedUploadPath = uploadPath.replace("{document_dirname}", documentDirname);
-                if (!resolvedUploadPath.endsWith("/")) {
-                  resolvedUploadPath += "/";
-                }
-                filename = `${resolvedUploadPath}${basename}`;
-              }
+              filename = join(documentPathDir, filename)
+            }
+            if (filename.startsWith(schema.publicPath || "")) {
+              filename = filename.substring(schema.publicPath.length);
+            }
+            if (filename.startsWith("/")) {
+              filename = filename.substring(1);
             }
 
             dom("u-modal", {

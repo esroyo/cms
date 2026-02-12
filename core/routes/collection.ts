@@ -87,7 +87,6 @@ app.path(
               initViews,
               views: Array.from(getViews(collection.fields)),
               folder,
-              documentDirname: folder.endsWith("/") ? folder.slice(0, -1) : folder,
               documentPathDir: normalizePath(posix.join(collection.storage.path, folder)),
               user,
             });
@@ -168,7 +167,6 @@ app.path(
               url: await getPreviewUrl(document),
               views: Array.from(getViews(collection.fields)),
               document,
-              documentDirname: posix.dirname(document.source.name),
               documentPathDir: posix.dirname(document.source.path),
               user,
             });
